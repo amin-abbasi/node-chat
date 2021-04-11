@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chat Room using Nodejs & Socket.io</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" 
+    integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
+    crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" 
+    integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" 
+    integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1"
+    crossorigin="anonymous"></script>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <div style="float:left;width:120px;border-right:1px solid #0f4e0f;height:300px;padding:10px;overflow:scroll-y;">
+      <b>USERS</b>
+      <div id="users"></div>
+  </div>
+  <div style="float:left;width:150px;border-right:1px solid #0f4e0f;height:300px;padding:10px;overflow:scroll-y;">
+      <b>All ROOMS</b>
+      <div id="rooms"></div>
+  </div>
+  <div style="float:right;width:150px;border-left:1px solid #0f4e0f;height:300px;padding:10px;overflow:scroll-y;">
+    <b>MY ROOMS</b>
+    <div id="myRooms"></div>
+  </div>
+  <div class="container">
+    <br>
+    <div class="jumbotron">
+      <h1 class="display-4">Send Message</h1>
+      <br>
+      <!-- <input id="name" class="form-control" placeholder="Name"> -->
+      <h4 id="userInfo" style="background-color:#a9f3b9;"></h4>
+      <br>
+      <textarea id="message" class="form-control" placeholder="Your Message Here"></textarea>
+      <br>
+      <button id="addUser" class="btn btn-success">Add User</button>
+      &nbsp;&nbsp;
+      <button id="send" class="btn btn-success">Send</button>
+      &nbsp;&nbsp;
+      <button id="switchRoom" class="btn btn-success">Switch Room</button>
+      &nbsp;&nbsp;
+      <button id="addRoom" class="btn btn-success">Add Room</button>
+      &nbsp;&nbsp;
+      <button id="removeRoom" class="btn btn-success">Leave Room</button>
+    </div>
+    <div id="messages"></div>
+  </div>
+  <script>
+    
+    const baseURL = 'http://localhost:3005'
+    const socket = io(baseURL)
+    const globalData = {}
+
+    $(() => {
+
+      // Button - Add User
+      $('#addUser').click(() => {
+        socket.emit('addUser', prompt("What's your name & room? [e.g.: 'Amin,room2']"))
+      })
+
+      // Button - SEND 
+      $('#send').click(() => {
+        const data = {
+          room: globalData.user.defaultRoom,
+          name: globalData.user.name,
+          message: $('#message').val()
+        }
+        sendMessage(data)
+        $('#message').val('')
+        socket.emit('sendMessage', data)
+      })
+
+      // Button - Change Default Room (other members also see the changes)
+      $('#switchRoom').click(() => {
+        socket.emit('switchRoom', globalData.user.defaultRoom, prompt(`Which room to switch?`))
+      })
+
+      // Button - Add Room
+      $('#addRoom').click(() => {
+        socket.emit('addRoom', globalData.user.defaultRoom, prompt("What's your new room name?"))
+      })
+
+      // Button - Remove Room
+      $('#removeRoom').click(() => {
+        socket.emit('removeRoom', globalData.user, prompt(`Which room to remove? ${globalData.user.rooms}`))
+      })
+    })
+
+    socket.on('sendMessage', addMessages)
+
+    function addMessages(data) {
+      $("#messages").append(`<h5> Room "${data.room}" - "${data.name}": </h5> <p> ${data.message} </p>`)
+    }
+
+    // listener, whenever the server emits 'updateChat', this updates the chat body
+    socket.on('updateChat', (user, message) => {
+      if(user.defaultRoom == globalData.user.defaultRoom && user.id != globalData.user.id)
+        $("#messages").append(`<h5> Room "${user.defaultRoom}" - "${user.name}": </h5> <p> ${message} </p>`)
+    })
+
+    function getMessages() {
+      const room = globalData.user.defaultRoom
+      $.get(`${baseURL}/v1/chat${room ? '?room=' + room : ''}`, (data) => {
+        console.log('>>>>data: ', data)
+        if(data.result.total == 0) return
+        data.result.list.forEach(addMessages)
+      })
+    }
+
+    function sendMessage(message) {
+      $.post(`${baseURL}/v1/chat`, message)
+    }
+
+    // on connection to server, ask for user's name
+	  // socket.on('connect', () => {
+    //   socket.emit('addUser', prompt("What's your name & room? [e.g.: 'Amin,room2']"))
+
+    //   // --> An Example for testing 'away' status: Set a timeout and emit to server 
+    //   // setTimeout(() => {
+    //   //   socket.emit('away', globalData.user)
+    //   // }, 5000)
+    // })
+
+    // listener, whenever the server emits 'getMessages', this updates the chat body
+    socket.on('getMessages', () => {
+      getMessages()
+    })
+
+    // listener, whenever the server emits 'updateChat', this updates the chat body
+    socket.on('updateChatInfo', (key, value) => {
+      $("#messages").append(`<h4> ${key} </h4> <p> ${value} </p>`)
+    })
+
+    // listener, whenever the server emits 'userJoined'
+    socket.on('userJoined', (user) => {
+      $('#userInfo').empty()
+      $('#userInfo').append(`<h4>User: ${user.name} -- Default Room: ${user.defaultRoom}</h4>`)
+      globalData.user = user
+      $('#myRooms').empty()
+      $.each(user.rooms, (key, value) => {
+        $('#myRooms').append('<h5>' + value + '</h5>')
+      })
+    })
+
+    // listener, whenever the server emits 'updateGlobalData'
+    socket.on('updateGlobalData', (allData) => {
+      $('#users').empty()
+      $.each(allData.allUsers, (key, value) => {
+        if($.inArray(globalData.user.defaultRoom, value.rooms) > -1)
+          $('#users').append('<h5>' + value.name + '</h5>')
+      })
+      $('#rooms').empty()
+      $.each(allData.allRooms, (key, value) => {
+        $('#rooms').append(`<h5> ${value.name} (${countUsers(allData.allUsers, value.name)})</h5>`)
+      })
+      globalData.allUsers = allData.allUsers
+      globalData.allRooms = allData.allRooms
+    })
+
+    function countUsers(users, room) {
+      let count = 0
+      $.each(users, (key, user) => {
+        if($.inArray(room, user.rooms) > -1) count++
+      })
+      return count
+    }
+
+    // // listener, whenever the server emits 'switchDefaultRoom', this updates the room the client is in
+    // socket.on('switchDefaultRoom', (room) => {
+    //   $('#room').empty()
+    //   $.each(rooms, (key, value) => {
+    //     if(value == current_room){
+    //       $('#room').append('<div>' + value + '</div>')
+    //     }
+    //     else {
+    //       $('#room').append('<div><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>')
+    //     }
+    //   })
+    // })
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+{
+  "name": "node-chat",
+  "version": "1.0.0",
+  "description": "Service for chat using Socket.io",
+  "main": "init.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node init.js",
+    "run": "pm2 start init.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amin4193/node-chat.git"
+  },
+  "keywords": [
+    "chat"
+  ],
+  "author": "Amin Abbasi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amin4193/node-chat/issues"
+  },
+  "homepage": "https://github.com/amin4193/node-chat#readme",
+  "dependencies": {
+    "@hapi/boom": "^9.1.2",
+    "body-parser": "^1.19.0",
+    "celebrate": "^14.0.0",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-winston": "^4.1.0",
+    "lodash": "^4.17.21",
+    "mongoose": "^5.12.3",
+    "path": "^0.12.7",
+    "redis": "^3.1.0",
+    "require-all": "^3.0.0",
+    "serve-favicon": "^2.5.0",
+    "shortid": "^2.2.16",
+    "socket.io": "^4.0.1",
+    "socket.io-client": "^4.0.1",
+    "winston": "^3.3.3",
+    "yml": "^1.0.0"
+  }
+}

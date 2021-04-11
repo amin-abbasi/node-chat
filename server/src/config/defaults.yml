@@ -1,0 +1,18 @@
+default:
+  server:
+    name: ms-chat
+    version: 1.0
+    env: development    # development / staging / stable / production
+    protocol: http      # or https
+    host: localhost     # or any host (i.e.: localhost / 172.16.4.117)
+    port: 3005          # or any port
+  logger:
+    host: localhost
+    port: 3005
+  db:
+    name: mongodb       # mongodb / mysql / ...
+    host: 127.0.0.1     # or any host
+    port: 27017         # or any other port
+    user: your_db_username
+    pass: your_db_password
+    index_name: chat

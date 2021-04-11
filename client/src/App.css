@@ -1,0 +1,49 @@
+.App-logo {
+  height: 10vmin;
+  margin: 10px;
+}
+
+.App-header {
+  background-color: #485879;
+  /* width: 71rem; */
+  /* display: flex; */
+  align-items: center;
+  color: white;
+}
+
+.App-name {
+  font-size: 36px;
+  padding-top: 30px;
+}
+
+.addNewUser {
+  margin-top: 40px;
+  margin-left: 300px;
+}
+
+.App-loading {
+  color: rgb(40, 167, 69);
+  border: 10px solid #e7e5e5;
+  border-radius: 50%;
+  border-top: 10px solid rgb(40, 167, 69);
+  width: 40px;
+  height: 40px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.messageBox {
+  overflow-y: auto; 
+  height: 550px;
+}
